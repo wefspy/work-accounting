@@ -1,4 +1,4 @@
-package work.accounting;
+package com.example.workaccounting;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
