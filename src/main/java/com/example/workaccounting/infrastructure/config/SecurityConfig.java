@@ -1,4 +1,4 @@
-package com.example.workaccounting.infrastructure.security;
+package com.example.workaccounting.infrastructure.config;
 
 import com.example.workaccounting.infrastructure.security.filter.JwtAuthenticationFilter;
 import com.example.workaccounting.infrastructure.security.jwt.parser.AccessTokenParser;
