@@ -28,7 +28,10 @@
 	</scm>
 	<properties>
 		<!-- java, kotlin and maven versions -->
-		<java.version>25</java.version>
+		<java.version>21</java.version>
+
+		<!-- Utility -->
+		<lombok.version>1.18.30</lombok.version>
 
 		<!-- Документация OpenAPI (Swagger) -->
 		<springdoc.version>2.8.4</springdoc.version>
@@ -42,7 +45,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.30</version>
+			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -63,6 +66,12 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+
+		<!-- Monitoring -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
 		<!-- Database -->
