@@ -95,6 +95,8 @@ CREATE TABLE projects
     project_status_id BIGINT                                  NOT NULL,
     title             VARCHAR(255)                            NOT NULL,
     description       TEXT,
+    tech_stack        VARCHAR(255),
+    team_size         INTEGER,
     version           BIGINT DEFAULT 0                        NOT NULL,
 
     CONSTRAINT pk_projects PRIMARY KEY (project_id),
@@ -273,3 +275,5 @@ CREATE TABLE milestone_evaluations
     CONSTRAINT fk_me_evaluator FOREIGN KEY (evaluator_user_id) REFERENCES users_info (user_id),
     CONSTRAINT chk_evaluator_type CHECK (evaluator_type IN ('external', 'mentor'))
 );
+
+

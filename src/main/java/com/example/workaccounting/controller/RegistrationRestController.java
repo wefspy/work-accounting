@@ -2,7 +2,7 @@ package com.example.workaccounting.controller;
 
 import com.example.workaccounting.application.dto.ApiErrorDto;
 import com.example.workaccounting.application.dto.RegisterDto;
-import com.example.workaccounting.application.dto.user.UserProfileInfoDto;
+import com.example.workaccounting.application.dto.UserProfileInfoDto;
 import com.example.workaccounting.application.service.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

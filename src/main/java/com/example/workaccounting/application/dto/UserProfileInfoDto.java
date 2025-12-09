@@ -1,6 +1,4 @@
-package com.example.workaccounting.application.dto.user;
-
-import com.example.workaccounting.application.dto.RoleDto;
+package com.example.workaccounting.application.dto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;

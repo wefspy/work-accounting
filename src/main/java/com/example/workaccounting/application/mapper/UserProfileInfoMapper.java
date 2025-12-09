@@ -1,6 +1,6 @@
 package com.example.workaccounting.application.mapper;
 
-import com.example.workaccounting.application.dto.user.UserProfileInfoDto;
+import com.example.workaccounting.application.dto.UserProfileInfoDto;
 import com.example.workaccounting.domain.model.Role;
 import com.example.workaccounting.domain.model.User;
 import com.example.workaccounting.domain.model.UserInfo;

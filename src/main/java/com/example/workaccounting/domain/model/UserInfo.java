@@ -47,4 +47,11 @@ public class UserInfo {
         setMiddleName(registerDto.middleName());
         setLastName(registerDto.lastName());
     }
+
+    public String getFullName() {
+        return String.format("%s %s %s",
+                getLastName(),
+                getFirstName(),
+                getMiddleName() != null ? getMiddleName() : "").trim();
+    }
 }

@@ -41,4 +41,10 @@ public class Project {
     @Column(name = "version", nullable = false)
     @Setter(AccessLevel.NONE)
     private Long version;
+
+    @Column(name = "tech_stack")
+    private String techStack;
+
+    @Column(name = "team_size")
+    private Integer teamSize;
 }

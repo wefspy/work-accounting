@@ -1,7 +1,7 @@
 package com.example.workaccounting.application.service;
 
 import com.example.workaccounting.application.dto.RegisterDto;
-import com.example.workaccounting.application.dto.user.UserProfileInfoDto;
+import com.example.workaccounting.application.dto.UserProfileInfoDto;
 import com.example.workaccounting.application.exception.EmailAlreadyTakenException;
 import com.example.workaccounting.application.exception.RoleNotFoundException;
 import com.example.workaccounting.application.mapper.UserProfileInfoMapper;
@@ -16,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
