@@ -52,4 +52,11 @@ public class Participant {
     @Column(name = "version", nullable = false)
     @Setter(AccessLevel.NONE)
     private Long version;
+
+    public String getFullName() {
+        return String.format("%s %s %s",
+                getLastName(),
+                getFirstName(),
+                getMiddleName() != null ? getMiddleName() : "").trim();
+    }
 }

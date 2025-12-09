@@ -21,6 +21,12 @@ public record ProjectDetailDto(
         @Schema(description = "Статус проекта")
         String status,
 
+        @Schema(description = "ID семестра")
+        Long semesterId,
+
+        @Schema(description = "Название семестра")
+        String semesterName,
+
         @Schema(description = "Количество лайков")
         long likesCount,
 
@@ -34,6 +40,9 @@ public record ProjectDetailDto(
         Long creatorId,
 
         @Schema(description = "ФИО создателя")
-        String creatorFio
+        String creatorFio,
+
+        @Schema(description = "Список наставников")
+        java.util.List<MentorDto> mentors
 ) {
 }

@@ -22,6 +22,12 @@ public record ProjectDto(
         @Schema(description = "Статус проекта")
         String status,
 
+        @Schema(description = "ID семестра")
+        Long semesterId,
+
+        @Schema(description = "Название семестра")
+        String semesterName,
+
         @Schema(description = "Количество лайков")
         long likes,
 
@@ -29,6 +35,9 @@ public record ProjectDto(
         long dislikes,
 
         @Schema(description = "Количество комментариев")
-        long commentsCount
+        long commentsCount,
+
+        @Schema(description = "Голос текущего пользователя (true - лайк, false - дизлайк, null - не голосовал)")
+        Boolean userVote
 ) {
 }

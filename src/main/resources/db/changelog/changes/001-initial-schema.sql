@@ -72,6 +72,7 @@ CREATE TABLE semesters
     name        TEXT                                    NOT NULL,
     starts_at   TIMESTAMP                               NOT NULL,
     ends_at     TIMESTAMP                               NOT NULL,
+    is_active   BOOLEAN DEFAULT FALSE                   NOT NULL,
     version     BIGINT DEFAULT 0                        NOT NULL,
 
     CONSTRAINT pk_semesters PRIMARY KEY (semester_id),
@@ -97,11 +98,21 @@ CREATE TABLE projects
     description       TEXT,
     tech_stack        VARCHAR(255),
     team_size         INTEGER,
+    semester_id       BIGINT                                  NOT NULL,
     version           BIGINT DEFAULT 0                        NOT NULL,
 
     CONSTRAINT pk_projects PRIMARY KEY (project_id),
     CONSTRAINT fk_projects_created_by FOREIGN KEY (created_by) REFERENCES users_info (user_id),
-    CONSTRAINT fk_projects_status FOREIGN KEY (project_status_id) REFERENCES project_status (project_status_id)
+    CONSTRAINT fk_projects_status FOREIGN KEY (project_status_id) REFERENCES project_status (project_status_id),
+    CONSTRAINT fk_projects_semester FOREIGN KEY (semester_id) REFERENCES semesters (semester_id)
+);
+
+CREATE TABLE project_curators (
+    project_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (project_id, user_id),
+    CONSTRAINT fk_pc_project FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE,
+    CONSTRAINT fk_pc_user FOREIGN KEY (user_id) REFERENCES users_info(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE project_status_history
@@ -207,7 +218,6 @@ CREATE TABLE project_teams
     version         BIGINT    DEFAULT 0                     NOT NULL,
 
     CONSTRAINT pk_project_teams PRIMARY KEY (project_team_id),
-    CONSTRAINT uc_project_teams_unique UNIQUE (project_id, team_id, semester_id),
     CONSTRAINT fk_pt_project FOREIGN KEY (project_id) REFERENCES projects (project_id),
     CONSTRAINT fk_pt_team FOREIGN KEY (team_id) REFERENCES teams (team_id),
     CONSTRAINT fk_pt_semester FOREIGN KEY (semester_id) REFERENCES semesters (semester_id)
@@ -273,7 +283,7 @@ CREATE TABLE milestone_evaluations
     CONSTRAINT pk_milestone_evaluations PRIMARY KEY (milestone_evaluation_id),
     CONSTRAINT fk_me_milestone FOREIGN KEY (project_milestone_id) REFERENCES project_milestones (project_milestone_id),
     CONSTRAINT fk_me_evaluator FOREIGN KEY (evaluator_user_id) REFERENCES users_info (user_id),
-    CONSTRAINT chk_evaluator_type CHECK (evaluator_type IN ('external', 'mentor'))
+    CONSTRAINT chk_evaluator_type CHECK (evaluator_type IN ('EXTERNAL', 'MENTOR'))
 );
 
 

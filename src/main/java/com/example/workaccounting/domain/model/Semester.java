@@ -31,6 +31,13 @@ public class Semester {
     @Column(name = "ends_at", nullable = false)
     private LocalDateTime endsAt;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = false;
+
+    @OneToMany(mappedBy = "semester")
+    @ToString.Exclude
+    private java.util.List<Project> projects = new java.util.ArrayList<>();
+
     @Version
     @Column(name = "version", nullable = false)
     @Setter(AccessLevel.NONE)

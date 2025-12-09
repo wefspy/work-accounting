@@ -1,10 +1,10 @@
 package com.example.workaccounting.domain.enums;
 
 public enum ProjectStatusType {
-    UNDER_DISCUSSION,
     VOTING,
-    ARCHIVED,
     APPROVED,
+    ARCHIVED_CANCELED,
+    ARCHIVED_COMPLETED,
     IN_PROGRESS;
 
     public static ProjectStatusType valueOfOrRuntimeException(String value) {

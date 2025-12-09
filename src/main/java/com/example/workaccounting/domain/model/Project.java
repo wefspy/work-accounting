@@ -3,7 +3,9 @@ package com.example.workaccounting.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "projects")
@@ -31,6 +33,11 @@ public class Project {
     @ToString.Exclude
     private ProjectStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "semester_id", nullable = false)
+    @ToString.Exclude
+    private Semester semester;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -47,4 +54,13 @@ public class Project {
 
     @Column(name = "team_size")
     private Integer teamSize;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "project_curators",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @ToString.Exclude
+    private Set<UserInfo> curators = new HashSet<>();
 }

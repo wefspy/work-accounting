@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Service
 public class ProjectService {
 
@@ -20,17 +23,20 @@ public class ProjectService {
     private final ProjectCommentRepository projectCommentRepository;
     private final UserInfoRepository userInfoRepository;
     private final ProjectStatusRepository projectStatusRepository;
+    private final SemesterRepository semesterRepository;
 
     public ProjectService(ProjectRepository projectRepository,
                           ProjectVoteRepository projectVoteRepository,
                           ProjectCommentRepository projectCommentRepository,
                           UserInfoRepository userInfoRepository,
-                          ProjectStatusRepository projectStatusRepository) {
+                          ProjectStatusRepository projectStatusRepository,
+                          SemesterRepository semesterRepository) {
         this.projectRepository = projectRepository;
         this.projectVoteRepository = projectVoteRepository;
         this.projectCommentRepository = projectCommentRepository;
         this.userInfoRepository = userInfoRepository;
         this.projectStatusRepository = projectStatusRepository;
+        this.semesterRepository = semesterRepository;
     }
 
     @Transactional
@@ -38,8 +44,11 @@ public class ProjectService {
         var user = userInfoRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var status = projectStatusRepository.findByName(ProjectStatusType.UNDER_DISCUSSION.name())
-                .orElseThrow(() -> new RuntimeException("Initial status UNDER_DISCUSSION not found"));
+        var status = projectStatusRepository.findByName(ProjectStatusType.VOTING.name())
+                .orElseThrow(() -> new RuntimeException("Initial status VOTING not found"));
+
+        var activeSemester = semesterRepository.findByActiveTrue()
+                .orElseThrow(() -> new RuntimeException("No active semester found. Cannot create project."));
 
         Project project = new Project();
         project.setTitle(dto.title());
@@ -48,13 +57,37 @@ public class ProjectService {
         project.setTeamSize(dto.teamSize());
         project.setCreatedBy(user);
         project.setStatus(status);
+        project.setSemester(activeSemester);
+
+        if (dto.mentorIds() != null && !dto.mentorIds().isEmpty()) {
+            List<UserInfo> mentors = userInfoRepository.findAllById(dto.mentorIds());
+            if (mentors.size() != dto.mentorIds().size()) {
+                 throw new RuntimeException("One or more mentors not found");
+            }
+            project.setCurators(new HashSet<>(mentors));
+        }
 
         Project savedProject = projectRepository.save(project);
-        return mapToProjectDto(savedProject);
+        return mapToProjectDto(savedProject, userId);
+    }
+    
+    @Transactional
+    public ProjectDto updateProjectMentors(Long projectId, ProjectUpdateMentorsDto dto, Long userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        
+        List<UserInfo> mentors = userInfoRepository.findAllById(dto.mentorIds());
+        if (mentors.size() != dto.mentorIds().size()) {
+             throw new RuntimeException("One or more mentors not found");
+        }
+        
+        project.setCurators(new HashSet<>(mentors));
+        Project savedProject = projectRepository.save(project);
+        return mapToProjectDto(savedProject, userId);
     }
 
     @Transactional
-    public ProjectDto updateProject(Long id, ProjectCreateDto dto, Long userId) {
+    public ProjectDto updateProject(Long id, ProjectUpdateDto dto, Long userId) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -69,7 +102,7 @@ public class ProjectService {
         project.setTeamSize(dto.teamSize());
 
         Project savedProject = projectRepository.save(project);
-        return mapToProjectDto(savedProject);
+        return mapToProjectDto(savedProject, userId);
     }
 
     @Transactional
@@ -134,7 +167,7 @@ public class ProjectService {
 
         project.setStatus(status);
         Project savedProject = projectRepository.save(project);
-        return mapToProjectDto(savedProject);
+        return mapToProjectDto(savedProject, userId);
     }
 
     @Transactional
@@ -167,11 +200,19 @@ public class ProjectService {
                 .description(project.getDescription())
                 .techStack(project.getTechStack())
                 .status(project.getStatus().getName())
+                .semesterId(project.getSemester().getId())
+                .semesterName(project.getSemester().getName())
                 .likesCount(likes)
                 .dislikesCount(dislikes)
                 .commentsCount(comments)
                 .creatorId(creator.getId())
                 .creatorFio(creator.getFullName())
+                .mentors(project.getCurators().stream()
+                        .map(curator -> MentorDto.builder()
+                                .id(curator.getId())
+                                .fullName(curator.getFullName())
+                                .build())
+                        .toList())
                 .build();
     }
 
@@ -194,17 +235,24 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProjectDto> getAllProjects(Pageable pageable) {
-        Page<Project> projects = projectRepository.findAll(pageable);
-        return projects.map(this::mapToProjectDto);
+    public Page<ProjectDto> getAllProjects(Pageable pageable, Long userId) {
+        Page<Project> projects = projectRepository.findByStatusName(ProjectStatusType.VOTING.name(), pageable);
+        return projects.map(project -> mapToProjectDto(project, userId));
     }
 
-    private ProjectDto mapToProjectDto(Project project) {
+    private ProjectDto mapToProjectDto(Project project, Long userId) {
         long likes = projectVoteRepository.countByProjectIdAndValue(project.getId(), true);
         long dislikes = projectVoteRepository.countByProjectIdAndValue(project.getId(), false);
         long comments = projectCommentRepository.countByProjectId(project.getId());
 
         String statusName = project.getStatus().getName();
+
+        Boolean userVote = null;
+        if (userId != null) {
+            userVote = projectVoteRepository.findByProjectIdAndVoterId(project.getId(), userId)
+                    .map(ProjectVote::isValue)
+                    .orElse(null);
+        }
 
         return ProjectDto.builder()
                 .id(project.getId())
@@ -212,9 +260,28 @@ public class ProjectService {
                 .description(project.getDescription())
                 .techStack(project.getTechStack())
                 .status(statusName)
+                .semesterId(project.getSemester().getId())
+                .semesterName(project.getSemester().getName())
                 .likes(likes)
                 .dislikes(dislikes)
                 .commentsCount(comments)
+                .userVote(userVote)
                 .build();
+    }
+
+    @Transactional
+    public ProjectDto updateProjectSemester(Long projectId, Long semesterId, Long userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        // Опционально: проверять права доступа (например, только создатель или админ)
+        // if (!project.getCreatedBy().getId().equals(userId)) { ... }
+
+        var semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        project.setSemester(semester);
+        Project savedProject = projectRepository.save(project);
+        return mapToProjectDto(savedProject, userId);
     }
 }
