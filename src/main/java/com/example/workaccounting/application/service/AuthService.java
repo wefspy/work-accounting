@@ -2,8 +2,10 @@ package com.example.workaccounting.application.service;
 
 import com.example.workaccounting.application.dto.LoginRequestDto;
 import com.example.workaccounting.application.dto.LoginResponseDto;
+import com.example.workaccounting.application.dto.UserDto;
 import com.example.workaccounting.application.exception.UserNotFoundException;
 import com.example.workaccounting.application.mapper.AccessTokenInputMapper;
+import com.example.workaccounting.domain.model.Role;
 import com.example.workaccounting.domain.model.User;
 import com.example.workaccounting.infrastructure.repository.jpa.UserRepository;
 import com.example.workaccounting.infrastructure.security.UserDetailsImpl;
@@ -14,6 +16,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -43,9 +47,13 @@ public class AuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         AccessTokenInput accessTokenInput = accessTokenInputMapper.from(userDetails);
 
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userDetails.getId()));
+
         return new LoginResponseDto(
                 jwtTokenFactory.generateAccessToken(accessTokenInput),
-                jwtTokenFactory.generateRefreshToken(accessTokenInput.userId())
+                jwtTokenFactory.generateRefreshToken(accessTokenInput.userId()),
+                mapToUserDto(user)
         );
     }
 
@@ -60,7 +68,19 @@ public class AuthService {
 
         return new LoginResponseDto(
                 jwtTokenFactory.generateAccessToken(accessTokenInput),
-                jwtTokenFactory.generateRefreshToken(accessTokenInput.userId())
+                jwtTokenFactory.generateRefreshToken(accessTokenInput.userId()),
+                mapToUserDto(user)
+        );
+    }
+
+    private UserDto mapToUserDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()),
+                user.getUserInfo().getFirstName(),
+                user.getUserInfo().getLastName(),
+                user.getUserInfo().getMiddleName(),
+                user.getEmail()
         );
     }
 }

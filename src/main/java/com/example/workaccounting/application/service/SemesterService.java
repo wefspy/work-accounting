@@ -1,6 +1,7 @@
 package com.example.workaccounting.application.service;
 
 import com.example.workaccounting.application.dto.*;
+import com.example.workaccounting.domain.enums.ProjectStatusType;
 import com.example.workaccounting.domain.model.Project;
 import com.example.workaccounting.domain.model.ProjectTeam;
 import com.example.workaccounting.domain.model.Semester;
@@ -8,6 +9,7 @@ import com.example.workaccounting.domain.model.UserInfo;
 import com.example.workaccounting.infrastructure.repository.jpa.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,19 @@ public class SemesterService {
         this.projectTeamRepository = projectTeamRepository;
         this.teamMembershipRepository = teamMembershipRepository;
         this.milestoneEvaluationRepository = milestoneEvaluationRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<SemesterDto> getAllSemesters() {
+        return semesterRepository.findAll(Sort.by(Sort.Direction.DESC, "endsAt")).stream()
+                .map(semester -> SemesterDto.builder()
+                        .id(semester.getId())
+                        .name(semester.getName())
+                        .startsAt(semester.getStartsAt())
+                        .endsAt(semester.getEndsAt())
+                        .isActive(semester.isActive())
+                        .build())
+                .toList();
     }
 
     @Transactional
@@ -103,85 +118,48 @@ public class SemesterService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SemesterComplexDto> getSemestersWithDetails(Pageable pageable) {
+    public Page<SemesterComplexDto> getSemestersWithDetails(String query, List<ProjectStatusType> statuses, Pageable pageable) {
         return semesterRepository.findAll(pageable)
                 .map(semester -> {
                     List<Project> projects = projectRepository.findBySemesterId(semester.getId());
-                    List<ProjectSummaryDto> projectDtos = projects.stream().map(project -> {
-                        List<String> curators = project.getCurators().stream()
-                                .map(UserInfo::getFullName)
-                                .toList();
 
-                        List<ProjectTeam> projectTeams = projectTeamRepository.findByProjectId(project.getId());
-                        List<TeamSummaryDto> teamDtos = projectTeams.stream().map(pt -> {
-                            var team = pt.getTeam();
-                            var members = teamMembershipRepository.findByTeamId(team.getId()).stream()
-                                    .map(tm -> tm.getParticipant().getLastName() + " " + tm.getParticipant().getFirstName())
-                                    .toList();
+                    List<ProjectSummaryDto> projectDtos = projects.stream()
+                            .filter(project -> {
+                                boolean matchesQuery = query == null || query.isBlank()
+                                        || project.getTitle().toLowerCase().contains(query.toLowerCase());
+                                boolean matchesStatus = statuses == null || statuses.isEmpty()
+                                        || statuses.contains(ProjectStatusType.valueOfOrRuntimeException(project.getStatus().getName()));
+                                return matchesQuery && matchesStatus;
+                            })
+                            .map(project -> {
+                                List<String> curators = project.getCurators().stream()
+                                        .map(UserInfo::getFullName)
+                                        .toList();
 
-                            BigDecimal avgRating = milestoneEvaluationRepository.getAverageScoreByTeamId(team.getId());
+                                List<ProjectTeam> projectTeams = projectTeamRepository.findByProjectId(project.getId());
+                                List<TeamSummaryDto> teamDtos = projectTeams.stream().map(pt -> {
+                                    var team = pt.getTeam();
+                                    var members = teamMembershipRepository.findByTeamId(team.getId()).stream()
+                                            .map(tm -> tm.getParticipant().getLastName() + " " + tm.getParticipant().getFirstName())
+                                            .toList();
 
-                            return TeamSummaryDto.builder()
-                                    .name(team.getName())
-                                    .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
-                                    .members(members)
-                                    .build();
-                        }).toList();
+                                    BigDecimal avgRating = milestoneEvaluationRepository.getAverageScoreByTeamId(team.getId());
 
-                        return ProjectSummaryDto.builder()
-                                .title(project.getTitle())
-                                .status(project.getStatus().getName())
-                                .techStack(project.getTechStack())
-                                .curators(curators)
-                                .teams(teamDtos)
-                                .build();
-                    }).toList();
+                                    return TeamSummaryDto.builder()
+                                            .name(team.getName())
+                                            .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
+                                            .members(members)
+                                            .build();
+                                }).toList();
 
-                    return SemesterComplexDto.builder()
-                            .id(semester.getId())
-                            .name(semester.getName())
-                            .projectCount(projects.size())
-                            .projects(projectDtos)
-                            .isActive(semester.isActive())
-                            .build();
-                });
-    }
-
-    @Transactional(readOnly = true)
-    public Page<SemesterComplexDto> searchProjects(String title, Pageable pageable) {
-        return semesterRepository.findDistinctByProjectsTitleContainingIgnoreCase(title, pageable)
-                .map(semester -> {
-                    List<Project> projects = projectRepository.findBySemesterIdAndTitleContainingIgnoreCase(semester.getId(), title);
-
-                    List<ProjectSummaryDto> projectDtos = projects.stream().map(project -> {
-                        List<String> curators = project.getCurators().stream()
-                                .map(UserInfo::getFullName)
-                                .toList();
-
-                        List<ProjectTeam> projectTeams = projectTeamRepository.findByProjectId(project.getId());
-                        List<TeamSummaryDto> teamDtos = projectTeams.stream().map(pt -> {
-                            var team = pt.getTeam();
-                            var members = teamMembershipRepository.findByTeamId(team.getId()).stream()
-                                    .map(tm -> tm.getParticipant().getLastName() + " " + tm.getParticipant().getFirstName())
-                                    .toList();
-
-                            BigDecimal avgRating = milestoneEvaluationRepository.getAverageScoreByTeamId(team.getId());
-
-                            return TeamSummaryDto.builder()
-                                    .name(team.getName())
-                                    .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
-                                    .members(members)
-                                    .build();
-                        }).toList();
-
-                        return ProjectSummaryDto.builder()
-                                .title(project.getTitle())
-                                .status(project.getStatus().getName())
-                                .techStack(project.getTechStack())
-                                .curators(curators)
-                                .teams(teamDtos)
-                                .build();
-                    }).toList();
+                                return ProjectSummaryDto.builder()
+                                        .title(project.getTitle())
+                                        .status(project.getStatus().getName())
+                                        .techStack(project.getTechStack())
+                                        .curators(curators)
+                                        .teams(teamDtos)
+                                        .build();
+                            }).toList();
 
                     return SemesterComplexDto.builder()
                             .id(semester.getId())

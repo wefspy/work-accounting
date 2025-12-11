@@ -10,6 +10,9 @@ public record LoginResponseDto(
 
         @Schema(description = "Токен для обновления accessToken по истечении его срока годности",
                 example = "b344bb**********************411e3d")
-        String refreshToken
+        String refreshToken,
+
+        @Schema(description = "Данные пользователя")
+        UserDto user
 ) {
 }

@@ -4,7 +4,9 @@ import com.example.workaccounting.application.dto.SemesterComplexDto;
 import com.example.workaccounting.application.dto.SemesterCreateDto;
 import com.example.workaccounting.application.dto.SemesterDto;
 import com.example.workaccounting.application.service.SemesterService;
+import com.example.workaccounting.domain.enums.ProjectStatusType;
 import io.swagger.v3.oas.annotations.Operation;
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -55,23 +57,24 @@ public class SemesterRestController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Получить список семестров (кратко)")
+    @ApiResponse(responseCode = "200", description = "Список семестров получен", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = SemesterDto.class))
+    })
+    @GetMapping
+    public ResponseEntity<List<SemesterDto>> getSemesters() {
+        return ResponseEntity.ok(semesterService.getAllSemesters());
+    }
+
     @Operation(summary = "Получить список семестров с деталями (проекты, команды)")
     @ApiResponse(responseCode = "200", description = "Список семестров с деталями успешно получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = SemesterComplexDto.class))
     })
     @GetMapping("/details")
     public ResponseEntity<Page<SemesterComplexDto>> getSemestersWithDetails(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) List<ProjectStatusType> statuses,
             @PageableDefault(sort = "endsAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(semesterService.getSemestersWithDetails(pageable));
-    }
-    @Operation(summary = "Поиск проектов по названию (возвращает иерархию семестров)")
-    @ApiResponse(responseCode = "200", description = "Результаты поиска успешно получены", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = SemesterComplexDto.class))
-    })
-    @GetMapping("/search")
-    public ResponseEntity<Page<SemesterComplexDto>> searchProjects(
-            @RequestParam String query,
-            @PageableDefault(sort = "endsAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(semesterService.searchProjects(query, pageable));
+        return ResponseEntity.ok(semesterService.getSemestersWithDetails(query, statuses, pageable));
     }
 }
