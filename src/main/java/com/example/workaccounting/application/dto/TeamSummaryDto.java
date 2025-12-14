@@ -9,6 +9,9 @@ import java.util.List;
 @Builder
 @Schema(description = "Краткая информация о команде")
 public record TeamSummaryDto(
+        @Schema(description = "ID команды")
+        Long id,
+
         @Schema(description = "Название команды")
         String name,
 

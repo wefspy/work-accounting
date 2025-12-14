@@ -8,6 +8,9 @@ import java.util.List;
 @Builder
 @Schema(description = "Краткая информация о проекте в семестре")
 public record ProjectSummaryDto(
+        @Schema(description = "ID проекта")
+        Long id,
+
         @Schema(description = "Название проекта")
         String title,
 

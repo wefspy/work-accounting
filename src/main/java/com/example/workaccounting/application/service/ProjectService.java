@@ -210,7 +210,7 @@ public class ProjectService {
                 .mentors(project.getCurators().stream()
                         .map(curator -> MentorDto.builder()
                                 .id(curator.getId())
-                                .fullName(curator.getFullName())
+                                .fio(curator.getFullName())
                                 .build())
                         .toList())
                 .build();

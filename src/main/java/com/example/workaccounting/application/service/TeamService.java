@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -167,8 +170,11 @@ public class TeamService {
     public TeamDetailedDto getTeamDetails(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found"));
+        return mapToTeamDetailedDto(team);
+    }
 
-        List<TeamMembership> memberships = teamMembershipRepository.findByTeamIdAndLeftAtIsNull(teamId);
+    private TeamDetailedDto mapToTeamDetailedDto(Team team) {
+        List<TeamMembership> memberships = teamMembershipRepository.findByTeamIdAndLeftAtIsNull(team.getId());
         List<TeamMemberShortDto> participants = memberships.stream()
                 .map(m -> TeamMemberShortDto.builder()
                         .id(m.getParticipant().getId())
@@ -176,7 +182,7 @@ public class TeamService {
                         .build())
                 .collect(Collectors.toList());
 
-        List<ProjectTeam> projectTeams = projectTeamRepository.findByTeamId(teamId);
+        List<ProjectTeam> projectTeams = projectTeamRepository.findByTeamId(team.getId());
 
         var currentProjectTeam = projectTeams.stream()
                 .filter(ProjectTeam::isActive)
@@ -204,9 +210,6 @@ public class TeamService {
 
     private TeamProjectHistoryDto mapToTeamProjectHistoryDto(ProjectTeam pt) {
         Project project = pt.getProject();
-        List<String> mentors = project.getCurators().stream()
-                .map(UserInfo::getFullName)
-                .collect(Collectors.toList());
 
         List<ProjectMilestone> milestones = projectMilestoneRepository.findByProjectTeamId(pt.getId());
         
@@ -221,12 +224,22 @@ public class TeamService {
         }
 
         return TeamProjectHistoryDto.builder()
+                .semesterId(pt.getSemester().getId())
                 .semesterName(pt.getSemester().getName())
+                .projectId(project.getId())
                 .title(project.getTitle())
-                .mentors(mentors)
+                .mentors(project.getCurators().stream()
+                        .map(curator -> MentorDto.builder()
+                                .id(curator.getId())
+                                .fio(curator.getFullName())
+                                .build())
+                        .collect(Collectors.toList()))
                 .techStack(project.getTechStack())
                 .description(project.getDescription())
                 .averageGrade(averageGrade)
+                .isActive(pt.isActive())
+                .assignedAt(pt.getAssignedAt())
+                .unassignedAt(pt.getUnassignedAt())
                 .build();
     }
 
@@ -303,5 +316,13 @@ public class TeamService {
         milestoneEvaluationRepository.delete(evaluation);
         projectMilestoneRepository.delete(milestone);
     }
+
+    @Transactional(readOnly = true)
+    public Page<TeamDetailedDto> getAllTeams(Pageable pageable) {
+        return teamRepository.findAll(pageable)
+                .map(this::mapToTeamDetailedDto);
+    }
+
+
 }
 

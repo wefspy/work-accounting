@@ -6,6 +6,8 @@ import com.example.workaccounting.infrastructure.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class TeamRestController {
 
     private final TeamService teamService;
+
+    @GetMapping
+    @Operation(summary = "Получить список команд")
+    public ResponseEntity<Page<TeamDetailedDto>> getAllTeams(Pageable pageable) {
+        return ResponseEntity.ok(teamService.getAllTeams(pageable));
+    }
 
     @PostMapping
     @Operation(summary = "Создать команду")

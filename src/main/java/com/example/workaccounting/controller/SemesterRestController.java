@@ -66,6 +66,15 @@ public class SemesterRestController {
         return ResponseEntity.ok(semesterService.getAllSemesters());
     }
 
+    @Operation(summary = "Получить семестр с проектами по ID")
+    @ApiResponse(responseCode = "200", description = "Семестр с деталями найден", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = SemesterComplexDto.class))
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<SemesterComplexDto> getSemesterById(@PathVariable Long id) {
+        return ResponseEntity.ok(semesterService.getSemesterById(id));
+    }
+
     @Operation(summary = "Получить список семестров с деталями (проекты, команды)")
     @ApiResponse(responseCode = "200", description = "Список семестров с деталями успешно получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = SemesterComplexDto.class))

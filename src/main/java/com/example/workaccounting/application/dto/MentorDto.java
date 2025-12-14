@@ -10,6 +10,6 @@ public record MentorDto(
         Long id,
 
         @Schema(description = "ФИО наставника")
-        String fullName
+        String fio
 ) {
 }

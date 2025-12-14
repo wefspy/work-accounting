@@ -153,6 +153,7 @@ public class SemesterService {
                                 }).toList();
 
                                 return ProjectSummaryDto.builder()
+                                        .id(project.getId())
                                         .title(project.getTitle())
                                         .status(project.getStatus().getName())
                                         .techStack(project.getTechStack())
@@ -169,5 +170,52 @@ public class SemesterService {
                             .isActive(semester.isActive())
                             .build();
                 });
+    }
+    @Transactional(readOnly = true)
+    public SemesterComplexDto getSemesterById(Long id) {
+        Semester semester = semesterRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        List<Project> projects = projectRepository.findBySemesterId(semester.getId());
+
+        List<ProjectSummaryDto> projectDtos = projects.stream()
+                .map(project -> {
+                    List<String> curators = project.getCurators().stream()
+                            .map(UserInfo::getFullName)
+                            .toList();
+
+                    List<ProjectTeam> projectTeams = projectTeamRepository.findByProjectId(project.getId());
+                    List<TeamSummaryDto> teamDtos = projectTeams.stream().map(pt -> {
+                        var team = pt.getTeam();
+                        var members = teamMembershipRepository.findByTeamId(team.getId()).stream()
+                                .map(tm -> tm.getParticipant().getLastName() + " " + tm.getParticipant().getFirstName())
+                                .toList();
+
+                        BigDecimal avgRating = milestoneEvaluationRepository.getAverageScoreByTeamId(team.getId());
+
+                        return TeamSummaryDto.builder()
+                                .name(team.getName())
+                                .averageRating(avgRating != null ? avgRating : BigDecimal.ZERO)
+                                .members(members)
+                                .build();
+                    }).toList();
+
+                    return ProjectSummaryDto.builder()
+                            .id(project.getId())
+                            .title(project.getTitle())
+                            .status(project.getStatus().getName())
+                            .techStack(project.getTechStack())
+                            .curators(curators)
+                            .teams(teamDtos)
+                            .build();
+                }).toList();
+
+        return SemesterComplexDto.builder()
+                .id(semester.getId())
+                .name(semester.getName())
+                .projectCount(projects.size())
+                .projects(projectDtos)
+                .isActive(semester.isActive())
+                .build();
     }
 }
