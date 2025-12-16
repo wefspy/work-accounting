@@ -7,6 +7,8 @@ import com.example.workaccounting.domain.model.TeamMembership;
 import com.example.workaccounting.domain.model.UserInfo;
 import com.example.workaccounting.infrastructure.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,6 +123,13 @@ public class ParticipantService {
         List<ProjectHistoryDto> history = participatedProjectTeams.stream()
                 .map(pt -> ProjectHistoryDto.builder()
                         .projectId(pt.getProject().getId())
+                        .teamId(pt.getTeam().getId())
+                        .mentors(pt.getProject().getCurators().stream()
+                                .map(curator -> MentorDto.builder()
+                                        .id(curator.getId())
+                                        .fio(curator.getFullName())
+                                        .build())
+                                .toList())
                         .projectTitle(pt.getProject().getTitle())
                         .semesterId(pt.getSemester().getId())
                         .semesterName(pt.getSemester().getName())
@@ -150,6 +159,7 @@ public class ParticipantService {
                 .id(participant.getId())
                 .fullname(participant.getFullName())
                 .bio(participant.getBio())
+                .currentTeamId(currentMembership != null ? currentMembership.getTeam().getId() : null)
                 .currentTeam(currentTeamName)
                 .currentProject(currentProjectDto)
                 .completedProjectsCount((int) completedProjectsCount)
@@ -170,5 +180,16 @@ public class ParticipantService {
                 .createdById(participant.getCreatedBy().getId())
                 .createdByName(participant.getCreatedBy().getFullName())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ParticipantDto> getAllParticipants(String query, Pageable pageable) {
+        Page<Participant> page;
+        if (query != null && !query.trim().isEmpty()) {
+            page = participantRepository.searchByFio(query.trim(), pageable);
+        } else {
+            page = participantRepository.findAll(pageable);
+        }
+        return page.map(this::mapToParticipantDto);
     }
 }

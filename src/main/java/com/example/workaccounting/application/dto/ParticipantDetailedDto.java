@@ -18,6 +18,9 @@ public record ParticipantDetailedDto(
         @Schema(description = "Биография")
         String bio,
 
+        @Schema(description = "ID текущей команды")
+        Long currentTeamId,
+
         @Schema(description = "Текущая команда")
         String currentTeam,
 

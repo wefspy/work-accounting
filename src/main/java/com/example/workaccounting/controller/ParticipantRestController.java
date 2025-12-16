@@ -9,6 +9,9 @@ import com.example.workaccounting.infrastructure.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -57,5 +60,13 @@ public class ParticipantRestController {
         
         participantService.deleteParticipant(id, userDetails.getId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    @Operation(summary = "Получить список участников")
+    public ResponseEntity<Page<ParticipantDto>> getParticipants(
+            @RequestParam(required = false) String query,
+            @ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(participantService.getAllParticipants(query, pageable));
     }
 }

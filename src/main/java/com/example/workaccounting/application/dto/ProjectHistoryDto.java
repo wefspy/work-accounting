@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Schema(description = "DTO истории проектов команды")
@@ -11,6 +12,12 @@ public record ProjectHistoryDto(
 
         @Schema(description = "ID проекта")
         Long projectId,
+
+        @Schema(description = "ID команды")
+        Long teamId,
+
+        @Schema(description = "Список наставников")
+        List<MentorDto> mentors,
 
         @Schema(description = "Название проекта")
         String projectTitle,
