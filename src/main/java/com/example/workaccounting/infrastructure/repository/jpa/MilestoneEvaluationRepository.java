@@ -11,6 +11,12 @@ import java.util.List;
 
 @Repository
 public interface MilestoneEvaluationRepository extends JpaRepository<MilestoneEvaluation, Long> {
+    List<MilestoneEvaluation> findByProjectMilestone_ProjectTeam_Id(Long projectTeamId);
+    List<MilestoneEvaluation> findByProjectMilestone_Id(Long projectMilestoneId);
+
+    List<MilestoneEvaluation> findByProjectMilestone_ProjectTeam_TeamId(Long teamId);
+
+    List<MilestoneEvaluation> findByProjectMilestone_ProjectTeam_TeamIdAndProjectMilestone_ProjectTeam_ProjectId(Long teamId, Long projectId);
     
     @Query("SELECT AVG(me.score) FROM MilestoneEvaluation me " +
            "JOIN me.projectMilestone pm " +

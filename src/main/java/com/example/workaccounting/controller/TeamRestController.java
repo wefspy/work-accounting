@@ -102,4 +102,17 @@ public class TeamRestController {
         teamService.deleteTeamGrade(id, evaluationId, userDetails.getId());
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{id}/grades")
+    @Operation(summary = "Получить все оценки команды")
+    public ResponseEntity<java.util.List<TeamGradeSummaryDto>> getTeamGrades(@PathVariable Long id) {
+        return ResponseEntity.ok(teamService.getTeamGrades(id));
+    }
+
+    @GetMapping("/{id}/projects/{projectId}/grades")
+    @Operation(summary = "Получить оценки команды за конкретный проект")
+    public ResponseEntity<java.util.List<TeamGradeSummaryDto>> getTeamProjectGrades(@PathVariable Long id,
+                                                                          @PathVariable Long projectId) {
+        return ResponseEntity.ok(teamService.getTeamProjectGrades(id, projectId));
+    }
 }

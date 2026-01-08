@@ -323,6 +323,35 @@ public class TeamService {
                 .map(this::mapToTeamDetailedDto);
     }
 
+    @Transactional(readOnly = true)
+    public List<TeamGradeSummaryDto> getTeamGrades(Long teamId) {
+        List<MilestoneEvaluation> evaluations = milestoneEvaluationRepository
+                .findByProjectMilestone_ProjectTeam_TeamId(teamId);
+        return evaluations.stream()
+                .map(this::mapToTeamGradeSummaryDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamGradeSummaryDto> getTeamProjectGrades(Long teamId, Long projectId) {
+        List<MilestoneEvaluation> evaluations = milestoneEvaluationRepository
+                .findByProjectMilestone_ProjectTeam_TeamIdAndProjectMilestone_ProjectTeam_ProjectId(teamId, projectId);
+        return evaluations.stream()
+                .map(this::mapToTeamGradeSummaryDto)
+                .collect(Collectors.toList());
+    }
+
+    private TeamGradeSummaryDto mapToTeamGradeSummaryDto(MilestoneEvaluation evaluation) {
+        return TeamGradeSummaryDto.builder()
+                .projectId(evaluation.getProjectMilestone().getProjectTeam().getProject().getId())
+                .projectTitle(evaluation.getProjectMilestone().getProjectTeam().getProject().getTitle())
+                .authorId(evaluation.getEvaluatorUser().getId())
+                .authorName(evaluation.getEvaluatorUser().getFullName())
+                .comment(evaluation.getFeedback())
+                .score(evaluation.getScore())
+                .build();
+    }
+
 
 }
 
