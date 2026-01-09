@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 @Schema(description = "Сводная информация об оценке команды")
 public record TeamGradeSummaryDto(
 
+        @Schema(description = "ID оценки")
+        Long id,
+
         @Schema(description = "ID проекта")
         Long projectId,
 

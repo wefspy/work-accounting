@@ -347,6 +347,7 @@ public class TeamService {
 
     private TeamGradeSummaryDto mapToTeamGradeSummaryDto(MilestoneEvaluation evaluation) {
         return TeamGradeSummaryDto.builder()
+                .id(evaluation.getId())
                 .projectId(evaluation.getProjectMilestone().getProjectTeam().getProject().getId())
                 .projectTitle(evaluation.getProjectMilestone().getProjectTeam().getProject().getTitle())
                 .authorId(evaluation.getEvaluatorUser().getId())
