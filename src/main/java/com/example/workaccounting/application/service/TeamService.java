@@ -72,6 +72,10 @@ public class TeamService {
         var activeSemester = semesterRepository.findByActiveTrue()
                 .orElseThrow(() -> new RuntimeException("No active semester found"));
 
+        if (projectTeamRepository.existsByTeamIdAndProjectId(teamId, projectId)) {
+            throw new RuntimeException("Team has already been assigned to this project");
+        }
+
         projectTeamRepository.findByTeamIdAndActiveTrue(teamId)
                 .ifPresent(activeProjectTeam -> {
                     activeProjectTeam.setActive(false);
