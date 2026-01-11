@@ -43,6 +43,9 @@ public record ProjectDetailDto(
         String creatorFio,
 
         @Schema(description = "Список наставников")
-        java.util.List<MentorDto> mentors
+        java.util.List<MentorDto> mentors,
+
+        @Schema(description = "Голос текущего пользователя (true - лайк, false - дизлайк, null - не голосовал)")
+        Boolean userVote
 ) {
 }

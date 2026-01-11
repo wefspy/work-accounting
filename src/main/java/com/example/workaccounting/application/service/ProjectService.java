@@ -184,7 +184,7 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectDetailDto getProjectDetails(Long projectId) {
+    public ProjectDetailDto getProjectDetails(Long projectId, Long userId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -193,6 +193,13 @@ public class ProjectService {
         long comments = projectCommentRepository.countByProjectId(projectId);
 
         UserInfo creator = project.getCreatedBy();
+
+        Boolean userVote = null;
+        if (userId != null) {
+            userVote = projectVoteRepository.findByProjectIdAndVoterId(projectId, userId)
+                    .map(ProjectVote::isValue)
+                    .orElse(null);
+        }
 
         return ProjectDetailDto.builder()
                 .id(project.getId())
@@ -213,6 +220,7 @@ public class ProjectService {
                                 .fio(curator.getFullName())
                                 .build())
                         .toList())
+                .userVote(userVote)
                 .build();
     }
 

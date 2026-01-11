@@ -43,8 +43,9 @@ public class ProjectRestController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectDetailDto.class))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectDetailDto> getProject(@PathVariable Long id) {
-        return ResponseEntity.ok(projectService.getProjectDetails(id));
+    public ResponseEntity<ProjectDetailDto> getProject(@PathVariable Long id,
+                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(projectService.getProjectDetails(id, userDetails != null ? userDetails.getId() : null));
     }
 
 
