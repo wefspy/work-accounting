@@ -25,7 +25,7 @@ public class ParticipantRestController {
     private final ParticipantService participantService;
 
     @PostMapping
-    @Operation(summary = "Создать участника")
+    @Operation(summary = "Создать участника", description = "Создает нового участника на основе переданных данных и текущего пользователя.")
     public ResponseEntity<ParticipantDto> createParticipant(
             @RequestBody ParticipantCreateDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -36,7 +36,7 @@ public class ParticipantRestController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Обновить участника")
+    @Operation(summary = "Обновить участника", description = "Обновляет информацию об участнике по его ID.")
     public ResponseEntity<ParticipantDto> updateParticipant(
             @PathVariable Long id,
             @RequestBody ParticipantUpdateDto dto,
@@ -46,14 +46,14 @@ public class ParticipantRestController {
     }
 
     @GetMapping("/{id}/details")
-    @Operation(summary = "Получить подробную информацию об участнике")
+    @Operation(summary = "Получить подробную информацию об участнике", description = "Возвращает детальную информацию об участнике, включая текущий проект и историю.")
     public ResponseEntity<ParticipantDetailedDto> getParticipantDetails(
             @PathVariable Long id) {
         return ResponseEntity.ok(participantService.getParticipantDetails(id));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удалить участника")
+    @Operation(summary = "Удалить участника", description = "Удаляет участника по ID.")
     public ResponseEntity<Void> deleteParticipant(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -63,7 +63,7 @@ public class ParticipantRestController {
     }
 
     @GetMapping
-    @Operation(summary = "Получить список участников")
+    @Operation(summary = "Получить список участников", description = "Возвращает список участников с возможностью фильтрации и пагинации.")
     public ResponseEntity<Page<ParticipantDto>> getParticipants(
             @RequestParam(required = false) String query,
             @ParameterObject Pageable pageable) {

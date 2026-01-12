@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "Пользователи")
+@Tag(name = "Пользователи", description = "API для управления пользователями")
 public class UserRestController {
 
     private final UserService userService;
@@ -25,7 +25,7 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    @Operation(summary = "Получить список всех пользователей")
+    @Operation(summary = "Получить список всех пользователей", description = "Возвращает список всех зарегистрированных пользователей системы.")
     @ApiResponse(responseCode = "200", description = "Список пользователей успешно получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
     })

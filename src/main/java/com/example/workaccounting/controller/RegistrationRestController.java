@@ -5,6 +5,7 @@ import com.example.workaccounting.application.dto.RegisterDto;
 import com.example.workaccounting.application.dto.UserProfileInfoDto;
 import com.example.workaccounting.application.service.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/registration")
+@Tag(name = "Регистрация", description = "API для регистрации пользователей")
 public class RegistrationRestController {
     private final RegistrationService registrationService;
 
@@ -24,7 +26,7 @@ public class RegistrationRestController {
         this.registrationService = registrationService;
     }
 
-    @Operation(summary = "Регистрация пользователя")
+    @Operation(summary = "Регистрация пользователя", description = "Регистрирует нового пользователя в системе, создавая необходимые записи.")
     @ApiResponse(responseCode = "200", description = "Пользователь зарегистрирован", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = UserProfileInfoDto.class))
     })

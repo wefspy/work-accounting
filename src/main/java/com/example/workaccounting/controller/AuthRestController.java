@@ -8,12 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Аутентификация", description = "API для аутентификации пользователей и обновлении токенов")
 public class AuthRestController {
     private final AuthService authService;
 
@@ -21,7 +23,7 @@ public class AuthRestController {
         this.authService = authService;
     }
 
-    @Operation(summary = "Аутентификация пользователя (логин)")
+    @Operation(summary = "Аутентификация пользователя (логин)", description = "Позволяет пользователю войти в систему, предоставив учетные данные. Возвращает пару токенов (access и refresh).")
     @ApiResponse(responseCode = "200", description = "Успешная аутентификация", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDto.class))
     })
@@ -40,7 +42,7 @@ public class AuthRestController {
         return ResponseEntity.status(200).body(loginResponseDto);
     }
 
-    @Operation(summary = "Обновление access/refresh токенов по refresh токену")
+    @Operation(summary = "Обновление access/refresh токенов по refresh токену", description = "Позволяет получить новую пару токенов, используя действительный refresh токен.")
     @ApiResponse(responseCode = "200", description = "Токены успешно обновлены", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDto.class))
     })

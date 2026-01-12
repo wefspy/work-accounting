@@ -4,6 +4,7 @@ import com.example.workaccounting.application.dto.*;
 import com.example.workaccounting.application.service.ProjectService;
 import com.example.workaccounting.infrastructure.security.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/projects")
+@Tag(name = "Проекты", description = "API для управления проектами")
 public class ProjectRestController {
 
     private final ProjectService projectService;
@@ -27,7 +29,7 @@ public class ProjectRestController {
         this.projectService = projectService;
     }
 
-    @Operation(summary = "Получение списка проектов (только VOTING)")
+    @Operation(summary = "Получение списка проектов (только VOTING)", description = "Возвращает список проектов со статусом VOTING. Поддерживается пагинация.")
     @ApiResponse(responseCode = "200", description = "Список проектов успешно получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectDto.class))
     })
@@ -38,7 +40,7 @@ public class ProjectRestController {
         return ResponseEntity.ok(projectService.getAllProjects(pageable, userDetails != null ? userDetails.getId() : null));
     }
 
-    @Operation(summary = "Получение подробной информации о проекте")
+    @Operation(summary = "Получение подробной информации о проекте", description = "Возвращает полную информацию о проекте по ID.")
     @ApiResponse(responseCode = "200", description = "Информация о проекте успешно получена", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = ProjectDetailDto.class))
     })
@@ -49,7 +51,7 @@ public class ProjectRestController {
     }
 
 
-    @Operation(summary = "Создать новый проект")
+    @Operation(summary = "Создать новый проект", description = "Создает новый проект с указанными данными.")
     @PostMapping
     public ResponseEntity<ProjectDto> createProject(@RequestBody @Valid ProjectCreateDto dto,
                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -57,7 +59,7 @@ public class ProjectRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
     }
 
-    @Operation(summary = "Обновить существующий проект")
+    @Operation(summary = "Обновить существующий проект", description = "Обновляет данные существующего проекта.")
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable Long id,
                                                     @RequestBody @Valid ProjectUpdateDto dto,
@@ -66,14 +68,14 @@ public class ProjectRestController {
         return ResponseEntity.ok(updatedProject);
     }
 
-    @Operation(summary = "Проголосовать за проект (лайк/дизлайк)")
+    @Operation(summary = "Проголосовать за проект (лайк/дизлайк)", description = "Учитывает голос пользователя за проект (лайк или дизлайк).")
     @PostMapping("/{id}/votes")
     public void voteProject(@PathVariable Long id, @RequestParam boolean value,
                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         projectService.voteProject(id, value, userDetails.getId());
     }
 
-    @Operation(summary = "Получение комментариев к проекту")
+    @Operation(summary = "Получение комментариев к проекту", description = "Возвращает список комментариев к указанному проекту.")
     @ApiResponse(responseCode = "200", description = "Список комментариев успешно получен", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = CommentDto.class))
     })
@@ -83,7 +85,7 @@ public class ProjectRestController {
         return ResponseEntity.ok(projectService.getProjectComments(id, pageable));
     }
 
-    @Operation(summary = "Добавить комментарий к проекту")
+    @Operation(summary = "Добавить комментарий к проекту", description = "Добавляет новый комментарий к проекту.")
     @PostMapping("/{id}/comments")
     public CommentDto addComment(@PathVariable Long id,
                                  @RequestBody @Valid CommentCreateDto dto,
@@ -91,7 +93,7 @@ public class ProjectRestController {
         return projectService.addComment(id, dto, userDetails.getId());
     }
 
-    @Operation(summary = "Удалить проект")
+    @Operation(summary = "Удалить проект", description = "Удаляет проект по ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id,
                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -99,7 +101,7 @@ public class ProjectRestController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Обновить статус проекта")
+    @Operation(summary = "Обновить статус проекта", description = "Изменяет статус проекта (например, на APPROVED).")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ProjectDto> updateProjectStatus(@PathVariable Long id,
                                                           @RequestParam String status,
@@ -108,7 +110,7 @@ public class ProjectRestController {
         return ResponseEntity.ok(updatedProject);
     }
 
-    @Operation(summary = "Обновить семестр проекта")
+    @Operation(summary = "Обновить семестр проекта", description = "Привязывает проект к другому семестру.")
     @PatchMapping("/{id}/semester")
     public ResponseEntity<ProjectDto> updateProjectSemester(@PathVariable Long id,
                                                             @RequestBody @Valid ProjectChangeSemesterDto dto,
@@ -117,7 +119,7 @@ public class ProjectRestController {
         return ResponseEntity.ok(updatedProject);
     }
 
-    @Operation(summary = "Обновить список наставников проекта")
+    @Operation(summary = "Обновить список наставников проекта", description = "Изменяет список наставников, привязанных к проекту.")
     @PutMapping("/{id}/mentors")
     public ResponseEntity<ProjectDto> updateProjectMentors(@PathVariable Long id,
                                                            @RequestBody @Valid ProjectUpdateMentorsDto dto,
