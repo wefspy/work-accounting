@@ -38,6 +38,9 @@ public record ProjectDto(
         long commentsCount,
 
         @Schema(description = "Голос текущего пользователя (true - лайк, false - дизлайк, null - не голосовал)")
-        Boolean userVote
+        Boolean userVote,
+
+        @Schema(description = "Необходимое число участников")
+        Integer teamSize
 ) {
 }

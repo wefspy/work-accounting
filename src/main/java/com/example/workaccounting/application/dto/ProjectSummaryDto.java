@@ -24,6 +24,9 @@ public record ProjectSummaryDto(
         List<String> curators,
 
         @Schema(description = "Список команд проекта")
-        List<TeamSummaryDto> teams
+        List<TeamSummaryDto> teams,
+
+        @Schema(description = "Необходимое число участников")
+        Integer teamSize
 ) {
 }

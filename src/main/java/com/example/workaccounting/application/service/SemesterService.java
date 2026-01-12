@@ -159,6 +159,7 @@ public class SemesterService {
                                         .techStack(project.getTechStack())
                                         .curators(curators)
                                         .teams(teamDtos)
+                                        .teamSize(project.getTeamSize())
                                         .build();
                             }).toList();
 
@@ -207,6 +208,7 @@ public class SemesterService {
                             .techStack(project.getTechStack())
                             .curators(curators)
                             .teams(teamDtos)
+                            .teamSize(project.getTeamSize())
                             .build();
                 }).toList();
 

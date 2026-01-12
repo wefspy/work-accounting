@@ -221,6 +221,7 @@ public class ProjectService {
                                 .build())
                         .toList())
                 .userVote(userVote)
+                .teamSize(project.getTeamSize())
                 .build();
     }
 
@@ -274,6 +275,7 @@ public class ProjectService {
                 .dislikes(dislikes)
                 .commentsCount(comments)
                 .userVote(userVote)
+                .teamSize(project.getTeamSize())
                 .build();
     }
 

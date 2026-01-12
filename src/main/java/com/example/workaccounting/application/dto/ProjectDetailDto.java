@@ -46,6 +46,9 @@ public record ProjectDetailDto(
         java.util.List<MentorDto> mentors,
 
         @Schema(description = "Голос текущего пользователя (true - лайк, false - дизлайк, null - не голосовал)")
-        Boolean userVote
+        Boolean userVote,
+
+        @Schema(description = "Необходимое число участников")
+        Integer teamSize
 ) {
 }
