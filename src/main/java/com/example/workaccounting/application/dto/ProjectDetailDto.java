@@ -49,6 +49,9 @@ public record ProjectDetailDto(
         Boolean userVote,
 
         @Schema(description = "Необходимое число участников")
-        Integer teamSize
+        Integer teamSize,
+
+        @Schema(description = "Список команд")
+        java.util.List<ProjectTeamDto> teams
 ) {
 }

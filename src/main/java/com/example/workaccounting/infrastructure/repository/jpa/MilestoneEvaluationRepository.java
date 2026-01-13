@@ -35,5 +35,10 @@ public interface MilestoneEvaluationRepository extends JpaRepository<MilestoneEv
            "WHERE pm.projectTeam.id IN :projectTeamIds")
     BigDecimal getAverageScoreByProjectTeamIds(@Param("projectTeamIds") List<Long> projectTeamIds);
 
+    @Query("SELECT AVG(me.score) FROM MilestoneEvaluation me " +
+           "JOIN me.projectMilestone pm " +
+           "WHERE pm.projectTeam.id = :projectTeamId")
+    BigDecimal getAverageScoreByProjectTeamId(@Param("projectTeamId") Long projectTeamId);
+
     List<MilestoneEvaluation> findByProjectMilestoneId(Long projectMilestoneId);
 }

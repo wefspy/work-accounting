@@ -24,19 +24,28 @@ public class ProjectService {
     private final UserInfoRepository userInfoRepository;
     private final ProjectStatusRepository projectStatusRepository;
     private final SemesterRepository semesterRepository;
+    private final ProjectTeamRepository projectTeamRepository;
+    private final TeamMembershipRepository teamMembershipRepository;
+    private final MilestoneEvaluationRepository milestoneEvaluationRepository;
 
     public ProjectService(ProjectRepository projectRepository,
                           ProjectVoteRepository projectVoteRepository,
                           ProjectCommentRepository projectCommentRepository,
                           UserInfoRepository userInfoRepository,
                           ProjectStatusRepository projectStatusRepository,
-                          SemesterRepository semesterRepository) {
+                          SemesterRepository semesterRepository,
+                          ProjectTeamRepository projectTeamRepository,
+                          TeamMembershipRepository teamMembershipRepository,
+                          MilestoneEvaluationRepository milestoneEvaluationRepository) {
         this.projectRepository = projectRepository;
         this.projectVoteRepository = projectVoteRepository;
         this.projectCommentRepository = projectCommentRepository;
         this.userInfoRepository = userInfoRepository;
         this.projectStatusRepository = projectStatusRepository;
         this.semesterRepository = semesterRepository;
+        this.projectTeamRepository = projectTeamRepository;
+        this.teamMembershipRepository = teamMembershipRepository;
+        this.milestoneEvaluationRepository = milestoneEvaluationRepository;
     }
 
     @Transactional
@@ -222,6 +231,29 @@ public class ProjectService {
                         .toList())
                 .userVote(userVote)
                 .teamSize(project.getTeamSize())
+                .teams(projectTeamRepository.findByProjectId(projectId).stream()
+                        .map(pt -> {
+                            var members = teamMembershipRepository.findByTeamIdAndLeftAtIsNull(pt.getTeam().getId())
+                                    .stream()
+                                    .map(tm -> TeamMemberShortDto.builder()
+                                            .id(tm.getParticipant().getId())
+                                            .fio(tm.getParticipant().getFullName())
+                                            .build())
+                                    .toList();
+                            
+                            var avgScore = milestoneEvaluationRepository.getAverageScoreByProjectTeamId(pt.getId());
+
+                            return ProjectTeamDto.builder()
+                                .id(pt.getTeam().getId())
+                                .name(pt.getTeam().getName())
+                                .active(pt.isActive())
+                                .assignedAt(pt.getAssignedAt())
+                                .unassignedAt(pt.getUnassignedAt())
+                                .participants(members)
+                                .averageRating(avgScore)
+                                .build();
+                        })
+                        .toList())
                 .build();
     }
 
