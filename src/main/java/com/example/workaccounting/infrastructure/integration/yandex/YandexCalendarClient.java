@@ -170,6 +170,12 @@ public class YandexCalendarClient {
         if (event.getDescription() != null) {
             sb.append("DESCRIPTION:").append(event.getDescription()).append("\r\n");
         }
+        if (event.getLocation() != null) {
+            sb.append("LOCATION:").append(event.getLocation()).append("\r\n");
+        }
+        if (event.getRecurrence() != null) {
+            sb.append("RRULE:").append(event.getRecurrence()).append("\r\n");
+        }
         sb.append("END:VEVENT\r\n");
         sb.append("END:VCALENDAR\r\n");
         return sb.toString();
@@ -198,6 +204,8 @@ public class YandexCalendarClient {
             String desc = extractValue(block, "DESCRIPTION:");
             String dtstart = extractValue(block, "DTSTART:");
             String dtend = extractValue(block, "DTEND:");
+            String location = extractValue(block, "LOCATION:");
+            String rrule = extractValue(block, "RRULE:");
 
             LocalDateTime start = parseDate(dtstart);
             LocalDateTime end = parseDate(dtend);
@@ -208,6 +216,8 @@ public class YandexCalendarClient {
                     .description(desc)
                     .start(start)
                     .end(end)
+                    .location(location)
+                    .recurrence(rrule)
                     .build();
         } catch (Exception e) {
             log.warn("Failed to parse event block: {}", e.getMessage());

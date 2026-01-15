@@ -27,6 +27,8 @@ public class YandexCalendarService {
                 .description(eventDto.getDescription())
                 .start(eventDto.getStart())
                 .end(eventDto.getEnd())
+                .location(eventDto.getLocation())
+                .recurrence(eventDto.getRecurrence())
                 .build();
         yandexCalendarClient.createEvent(fullDto);
     }
@@ -38,6 +40,8 @@ public class YandexCalendarService {
                 .description(eventDto.getDescription())
                 .start(eventDto.getStart())
                 .end(eventDto.getEnd())
+                .location(eventDto.getLocation())
+                .recurrence(eventDto.getRecurrence())
                 .build();
         yandexCalendarClient.updateEvent(uid, fullDto);
     }

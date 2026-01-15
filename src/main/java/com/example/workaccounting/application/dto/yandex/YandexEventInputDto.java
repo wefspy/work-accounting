@@ -25,4 +25,10 @@ public class YandexEventInputDto {
 
     @Schema(description = "Время окончания события", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime end;
+
+    @Schema(description = "Место проведения события")
+    private String location;
+
+    @Schema(description = "Правило повторения (RRULE), например 'FREQ=WEEKLY;COUNT=5'")
+    private String recurrence;
 }
