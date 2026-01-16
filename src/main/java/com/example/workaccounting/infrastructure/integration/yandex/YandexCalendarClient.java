@@ -223,6 +223,20 @@ public class YandexCalendarClient {
             ZonedDateTime start = parseDate(dtstart);
             ZonedDateTime end = parseDate(dtend);
 
+            if (rrule != null) {
+                // For recurring events, user expects start/end to be empty and recurrence to contain DTSTART and RRULE
+                String combinedRecurrence = "DTSTART:" + dtstart + "\nRRULE:" + rrule;
+                return YandexEventDto.builder()
+                        .uid(uid)
+                        .summary(summary)
+                        .description(desc)
+                        .location(location)
+                        .recurrence(combinedRecurrence)
+                        .start(null)
+                        .end(null) // Assuming null is acceptable for empty
+                        .build();
+            }
+
             return YandexEventDto.builder()
                     .uid(uid)
                     .summary(summary)
@@ -230,7 +244,7 @@ public class YandexCalendarClient {
                     .start(start)
                     .end(end)
                     .location(location)
-                    .recurrence(rrule)
+                    .recurrence(null)
                     .build();
         } catch (Exception e) {
             log.warn("Failed to parse event block: {}", e.getMessage());
