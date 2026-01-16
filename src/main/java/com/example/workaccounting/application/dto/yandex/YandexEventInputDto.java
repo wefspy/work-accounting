@@ -20,10 +20,10 @@ public class YandexEventInputDto {
     @Schema(description = "Описание события")
     private String description;
 
-    @Schema(description = "Время начала события", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Время начала события")
     private ZonedDateTime start;
 
-    @Schema(description = "Время окончания события", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Время окончания события")
     private ZonedDateTime end;
 
     @Schema(description = "Место проведения события")

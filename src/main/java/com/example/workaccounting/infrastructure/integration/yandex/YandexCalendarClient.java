@@ -168,8 +168,12 @@ public class YandexCalendarClient {
         sb.append("BEGIN:VEVENT\r\n");
         sb.append("UID:").append(event.getUid()).append("\r\n");
         sb.append("DTSTAMP:").append(ZonedDateTime.now(ZoneId.of("UTC")).format(ICAL_DATE_FORMAT)).append("Z\r\n");
-        sb.append("DTSTART:").append(toUtc(event.getStart())).append("\r\n");
-        sb.append("DTEND:").append(toUtc(event.getEnd())).append("\r\n");
+        if (event.getStart() != null) {
+            sb.append("DTSTART:").append(toUtc(event.getStart())).append("\r\n");
+        }
+        if (event.getEnd() != null) {
+            sb.append("DTEND:").append(toUtc(event.getEnd())).append("\r\n");
+        }
         sb.append("SUMMARY:").append(event.getSummary()).append("\r\n");
         if (event.getDescription() != null) {
             sb.append("DESCRIPTION:").append(event.getDescription()).append("\r\n");
@@ -178,7 +182,12 @@ public class YandexCalendarClient {
             sb.append("LOCATION:").append(event.getLocation()).append("\r\n");
         }
         if (event.getRecurrence() != null) {
-            sb.append("RRULE:").append(event.getRecurrence()).append("\r\n");
+            String rrule = event.getRecurrence();
+            if (rrule.contains("DTSTART:") || rrule.contains("RRULE:") || rrule.contains("\n")) {
+                 sb.append(rrule).append("\r\n");
+            } else {
+                 sb.append("RRULE:").append(rrule).append("\r\n");
+            }
         }
         sb.append("END:VEVENT\r\n");
         sb.append("END:VCALENDAR\r\n");
