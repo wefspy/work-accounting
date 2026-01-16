@@ -11,4 +11,6 @@ public interface ProjectCommentRepository extends JpaRepository<ProjectComment, 
     long countByProjectId(Long projectId);
 
     Page<ProjectComment> findByProjectId(Long projectId, Pageable pageable);
+
+    void deleteByProjectId(Long projectId);
 }

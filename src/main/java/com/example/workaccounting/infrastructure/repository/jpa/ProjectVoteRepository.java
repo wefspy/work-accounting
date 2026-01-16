@@ -11,4 +11,6 @@ public interface ProjectVoteRepository extends JpaRepository<ProjectVote, Long> 
     long countByProjectIdAndValue(Long projectId, boolean value);
 
     Optional<ProjectVote> findByProjectIdAndVoterId(Long projectId, Long userId);
+
+    void deleteByProjectId(Long projectId);
 }

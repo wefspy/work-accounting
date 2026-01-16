@@ -27,6 +27,9 @@ public class ProjectService {
     private final ProjectTeamRepository projectTeamRepository;
     private final TeamMembershipRepository teamMembershipRepository;
     private final MilestoneEvaluationRepository milestoneEvaluationRepository;
+    private final ProjectStatusHistoryRepository projectStatusHistoryRepository;
+    private final ProjectRevisionRepository projectRevisionRepository;
+    private final ProjectMilestoneRepository projectMilestoneRepository;
 
     public ProjectService(ProjectRepository projectRepository,
                           ProjectVoteRepository projectVoteRepository,
@@ -36,7 +39,10 @@ public class ProjectService {
                           SemesterRepository semesterRepository,
                           ProjectTeamRepository projectTeamRepository,
                           TeamMembershipRepository teamMembershipRepository,
-                          MilestoneEvaluationRepository milestoneEvaluationRepository) {
+                          MilestoneEvaluationRepository milestoneEvaluationRepository,
+                          ProjectStatusHistoryRepository projectStatusHistoryRepository,
+                          ProjectRevisionRepository projectRevisionRepository,
+                          ProjectMilestoneRepository projectMilestoneRepository) {
         this.projectRepository = projectRepository;
         this.projectVoteRepository = projectVoteRepository;
         this.projectCommentRepository = projectCommentRepository;
@@ -46,6 +52,9 @@ public class ProjectService {
         this.projectTeamRepository = projectTeamRepository;
         this.teamMembershipRepository = teamMembershipRepository;
         this.milestoneEvaluationRepository = milestoneEvaluationRepository;
+        this.projectStatusHistoryRepository = projectStatusHistoryRepository;
+        this.projectRevisionRepository = projectRevisionRepository;
+        this.projectMilestoneRepository = projectMilestoneRepository;
     }
 
     @Transactional
@@ -189,6 +198,34 @@ public class ProjectService {
         //     throw new RuntimeException("You are not allowed to delete this project");
         // }
 
+        // 1. Delete comments
+        projectCommentRepository.deleteByProjectId(id);
+
+        // 2. Delete votes
+        projectVoteRepository.deleteByProjectId(id);
+
+        // 3. Delete status history
+        projectStatusHistoryRepository.deleteByProjectId(id);
+
+        // 4. Delete revisions
+        projectRevisionRepository.deleteByProjectId(id);
+
+        // 5. Handle Project Teams (Deep delete)
+        List<com.example.workaccounting.domain.model.ProjectTeam> projectTeams = projectTeamRepository.findByProjectId(id);
+        for (var pt : projectTeams) {
+            // Delete milestones and their evaluations
+            List<com.example.workaccounting.domain.model.ProjectMilestone> milestones = projectMilestoneRepository.findByProjectTeamId(pt.getId());
+            for (var milestone : milestones) {
+                // Delete evaluations for this milestone
+                var evaluations = milestoneEvaluationRepository.findByProjectMilestoneId(milestone.getId());
+                milestoneEvaluationRepository.deleteAll(evaluations);
+            }
+            projectMilestoneRepository.deleteAll(milestones);
+        }
+        // now delete the project teams themselves
+        projectTeamRepository.deleteAll(projectTeams);
+
+        // 6. Delete the project
         projectRepository.delete(project);
     }
 
