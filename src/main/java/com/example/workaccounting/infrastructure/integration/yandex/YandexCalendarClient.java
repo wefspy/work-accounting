@@ -15,6 +15,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -32,8 +35,9 @@ public class YandexCalendarClient {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     private static final DateTimeFormatter ICAL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss");
+    private static final ZoneId ZONE_ID = ZoneId.of("UTC");
 
-    public List<YandexEventDto> getEvents(LocalDateTime from, LocalDateTime to) {
+    public List<YandexEventDto> getEvents(ZonedDateTime from, ZonedDateTime to) {
         String authHeader = getAuthHeader();
         String reportBody = buildReportBody(from, to);
         String url = getCleanUrl();
@@ -136,9 +140,9 @@ public class YandexCalendarClient {
         return url;
     }
 
-    private String buildReportBody(LocalDateTime from, LocalDateTime to) {
-        String start = from.format(ICAL_DATE_FORMAT) + "Z";
-        String end = to.format(ICAL_DATE_FORMAT) + "Z";
+    private String buildReportBody(ZonedDateTime from, ZonedDateTime to) {
+        String start = toUtc(from);
+        String end = toUtc(to);
 
         return "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" +
                 "<C:calendar-query xmlns:D=\"DAV:\" xmlns:C=\"urn:ietf:params:xml:ns:caldav\">\n" +
@@ -163,9 +167,9 @@ public class YandexCalendarClient {
         sb.append("PRODID:-//WorkAccounting//NONSGML v1.0//EN\r\n");
         sb.append("BEGIN:VEVENT\r\n");
         sb.append("UID:").append(event.getUid()).append("\r\n");
-        sb.append("DTSTAMP:").append(LocalDateTime.now().format(ICAL_DATE_FORMAT)).append("Z\r\n");
-        sb.append("DTSTART:").append(event.getStart().format(ICAL_DATE_FORMAT)).append("\r\n"); // Assuming local time for simplicity or matching server expectations
-        sb.append("DTEND:").append(event.getEnd().format(ICAL_DATE_FORMAT)).append("\r\n");
+        sb.append("DTSTAMP:").append(ZonedDateTime.now(ZoneId.of("UTC")).format(ICAL_DATE_FORMAT)).append("Z\r\n");
+        sb.append("DTSTART:").append(toUtc(event.getStart())).append("\r\n");
+        sb.append("DTEND:").append(toUtc(event.getEnd())).append("\r\n");
         sb.append("SUMMARY:").append(event.getSummary()).append("\r\n");
         if (event.getDescription() != null) {
             sb.append("DESCRIPTION:").append(event.getDescription()).append("\r\n");
@@ -207,8 +211,8 @@ public class YandexCalendarClient {
             String location = extractValue(block, "LOCATION:");
             String rrule = extractValue(block, "RRULE:");
 
-            LocalDateTime start = parseDate(dtstart);
-            LocalDateTime end = parseDate(dtend);
+            ZonedDateTime start = parseDate(dtstart);
+            ZonedDateTime end = parseDate(dtend);
 
             return YandexEventDto.builder()
                     .uid(uid)
@@ -240,12 +244,32 @@ public class YandexCalendarClient {
         return null;
     }
 
-    private LocalDateTime parseDate(String dateStr) {
+    private ZonedDateTime parseDate(String dateStr) {
         if (dateStr == null) return null;
-        String cleanDate = dateStr.replaceAll("[^0-9T]", ""); 
+        String cleanDate = dateStr.replaceAll("[^0-9TZ]", "");
         if (cleanDate.length() >= 15) {
-             return LocalDateTime.parse(cleanDate.substring(0, 15), ICAL_DATE_FORMAT);
+             if (cleanDate.endsWith("Z")) {
+                 // UTC time
+                 LocalDateTime utcTime = LocalDateTime.parse(cleanDate.substring(0, 15), ICAL_DATE_FORMAT);
+                 return utcTime.atZone(ZoneId.of("UTC"));
+             } else {
+                 // Floating time, assume Moscow as per previous logic or default to system?
+                 // Since we moved to ZonedDateTime, let's treat floating as Moscow (historical default) or UTC?
+                 // The user says "Widget uses device timezone UTC+5".
+                 // Yandex usually returns floating time for non-UTC events or specific timezones.
+                 // Let's stick to UTC if we treat everything as UTC now, or better:
+                 // If no Z, it's floating. But we changed ZONE_ID to UTC.
+                 return LocalDateTime.parse(cleanDate.substring(0, 15), ICAL_DATE_FORMAT).atZone(ZoneId.of("UTC"));
+             }
         }
         return null;
+    }
+
+    private String toUtc(ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) {
+            return "";
+        }
+        return zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
+                .format(ICAL_DATE_FORMAT) + "Z";
     }
 }

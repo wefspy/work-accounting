@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -21,10 +21,10 @@ public class YandexEventInputDto {
     private String description;
 
     @Schema(description = "Время начала события", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime start;
+    private ZonedDateTime start;
 
     @Schema(description = "Время окончания события", requiredMode = Schema.RequiredMode.REQUIRED)
-    private LocalDateTime end;
+    private ZonedDateTime end;
 
     @Schema(description = "Место проведения события")
     private String location;

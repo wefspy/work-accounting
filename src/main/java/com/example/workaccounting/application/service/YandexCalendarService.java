@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -17,7 +17,7 @@ public class YandexCalendarService {
 
     private final YandexCalendarClient yandexCalendarClient;
 
-    public List<YandexEventDto> getEvents(LocalDateTime from, LocalDateTime to) {
+    public List<YandexEventDto> getEvents(ZonedDateTime from, ZonedDateTime to) {
         return yandexCalendarClient.getEvents(from, to);
     }
 
